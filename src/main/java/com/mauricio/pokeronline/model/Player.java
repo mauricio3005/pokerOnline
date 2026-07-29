@@ -10,6 +10,7 @@ public class Player {
     private final String name;
     private int chips;
     private int currentBet;
+    private int totalBetThisHand;
     private final List<Card> holeCards;
     private PlayerStatus status;
 
@@ -18,6 +19,7 @@ public class Player {
         this.name = name;
         this.chips = chips;
         this.currentBet = 0;
+        this.totalBetThisHand = 0;
         this.holeCards = new ArrayList<>(2);
         this.status = PlayerStatus.ATIVO;
     }
@@ -39,9 +41,14 @@ public class Player {
         }
         chips -= amount;
         currentBet += amount;
+        totalBetThisHand += amount;
         if (chips == 0) {
             status = PlayerStatus.ALL_IN;
         }
+    }
+
+    public void winChips(int amount) {
+        chips += amount;
     }
 
     public void resetBetForNewPhase() {
@@ -51,6 +58,7 @@ public class Player {
     public void resetHand() {
         holeCards.clear();
         currentBet = 0;
+        totalBetThisHand = 0;
         if (status != PlayerStatus.DESCONECTADO) {
             status = PlayerStatus.ATIVO;
         }
@@ -70,6 +78,10 @@ public class Player {
 
     public int getCurrentBet() {
         return currentBet;
+    }
+
+    public int getTotalBetThisHand() {
+        return totalBetThisHand;
     }
 
     public List<Card> getHoleCards() {

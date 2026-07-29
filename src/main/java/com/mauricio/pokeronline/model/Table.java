@@ -93,6 +93,10 @@ public class Table {
         pot += amount;
     }
 
+    public void clearPot() {
+        pot = 0;
+    }
+
     public void advanceDealerPosition() {
         if (players.isEmpty()) {
             return;
