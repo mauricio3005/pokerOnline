@@ -1,5 +1,6 @@
 package com.mauricio.pokeronline.service;
 
+import com.mauricio.pokeronline.entity.Account;
 import com.mauricio.pokeronline.model.EvaluatedHand;
 import com.mauricio.pokeronline.model.HandEvaluator;
 import com.mauricio.pokeronline.model.Player;
@@ -8,6 +9,7 @@ import com.mauricio.pokeronline.model.PlayerStatus;
 import com.mauricio.pokeronline.model.Round;
 import com.mauricio.pokeronline.model.RoundPhase;
 import com.mauricio.pokeronline.model.Table;
+import com.mauricio.pokeronline.repository.AccountRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
@@ -26,6 +28,11 @@ public class GameService {
 
     private final Map<String, Table> tables = new ConcurrentHashMap<>();
     private final Map<String, Round> rounds = new ConcurrentHashMap<>();
+    private final AccountRepository accountRepository;
+
+    public GameService(AccountRepository accountRepository) {
+        this.accountRepository = accountRepository;
+    }
 
     public Table createTable(String name, int maxSeats) {
         Table table = new Table(name, maxSeats);
@@ -38,6 +45,47 @@ public class GameService {
         Player player = new Player(playerName, startingChips);
         table.addPlayer(player);
         return player;
+    }
+
+    /**
+     * Senta uma conta persistida na mesa: o buy-in é debitado do bankroll da {@link Account}
+     * e vira as fichas em jogo do {@link Player} criado para representá-la nesta mão.
+     */
+    public Player joinTableWithAccount(String tableId, Long accountId, int buyIn) {
+        Table table = getTable(tableId);
+        Account account = getAccount(accountId);
+
+        account.withdraw(buyIn);
+        accountRepository.save(account);
+
+        Player player = new Player(accountId, account.getUsername(), buyIn);
+        table.addPlayer(player);
+        return player;
+    }
+
+    /**
+     * Retira um jogador da mesa e, se ele estiver vinculado a uma conta, devolve as fichas
+     * restantes ao bankroll persistido (cash-out).
+     */
+    public void leaveTable(String tableId, String playerId) {
+        Table table = getTable(tableId);
+        Player player = table.getPlayers().stream()
+                .filter(p -> p.getId().equals(playerId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Jogador não encontrado na mesa: " + playerId));
+
+        if (player.getAccountId() != null) {
+            Account account = getAccount(player.getAccountId());
+            account.deposit(player.getChips());
+            accountRepository.save(account);
+        }
+
+        table.removePlayer(playerId);
+    }
+
+    private Account getAccount(Long accountId) {
+        return accountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada: " + accountId));
     }
 
     public void startHand(String tableId, int smallBlind, int bigBlind) {

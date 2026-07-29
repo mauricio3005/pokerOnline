@@ -7,6 +7,7 @@ import java.util.UUID;
 public class Player {
 
     private final String id;
+    private final Long accountId;
     private final String name;
     private int chips;
     private int currentBet;
@@ -15,7 +16,12 @@ public class Player {
     private PlayerStatus status;
 
     public Player(String name, int chips) {
+        this(null, name, chips);
+    }
+
+    public Player(Long accountId, String name, int chips) {
         this.id = UUID.randomUUID().toString();
+        this.accountId = accountId;
         this.name = name;
         this.chips = chips;
         this.currentBet = 0;
@@ -66,6 +72,10 @@ public class Player {
 
     public String getId() {
         return id;
+    }
+
+    public Long getAccountId() {
+        return accountId;
     }
 
     public String getName() {
