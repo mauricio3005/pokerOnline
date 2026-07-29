@@ -195,4 +195,12 @@ public class GameService {
         }
         return round;
     }
+
+    /**
+     * Como {@link #getRound}, mas devolve {@code null} em vez de lançar exceção quando
+     * não há mão em andamento — para chamadores que precisam apenas verificar o estado.
+     */
+    public Round findRound(String tableId) {
+        return rounds.get(tableId);
+    }
 }
