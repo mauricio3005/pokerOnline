@@ -9,6 +9,7 @@ public class Player {
     private final String id;
     private final String name;
     private int chips;
+    private int currentBet;
     private final List<Card> holeCards;
     private PlayerStatus status;
 
@@ -16,6 +17,7 @@ public class Player {
         this.id = UUID.randomUUID().toString();
         this.name = name;
         this.chips = chips;
+        this.currentBet = 0;
         this.holeCards = new ArrayList<>(2);
         this.status = PlayerStatus.ATIVO;
     }
@@ -36,13 +38,19 @@ public class Player {
             throw new IllegalArgumentException("O jogador não possui fichas suficientes.");
         }
         chips -= amount;
+        currentBet += amount;
         if (chips == 0) {
             status = PlayerStatus.ALL_IN;
         }
     }
 
+    public void resetBetForNewPhase() {
+        currentBet = 0;
+    }
+
     public void resetHand() {
         holeCards.clear();
+        currentBet = 0;
         if (status != PlayerStatus.DESCONECTADO) {
             status = PlayerStatus.ATIVO;
         }
@@ -58,6 +66,10 @@ public class Player {
 
     public int getChips() {
         return chips;
+    }
+
+    public int getCurrentBet() {
+        return currentBet;
     }
 
     public List<Card> getHoleCards() {
